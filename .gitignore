@@ -1,0 +1,15 @@
+# ローカル設定（APP_PORT などを書く .env はコミットしない）
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# エディタ・OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
