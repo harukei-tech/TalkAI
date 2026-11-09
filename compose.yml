@@ -1,0 +1,35 @@
+services:
+  talkai:
+    build: ./app
+    container_name: talkai
+    ports:
+      # マイクを使うためブラウザからは http://localhost:${APP_PORT} で開く（localhost 以外は HTTPS が必要）
+      - "127.0.0.1:${APP_PORT:-8765}:8000"
+    environment:
+      # ホスト（Windows）の ollama
+      OLLAMA_URL: http://host.docker.internal:11434
+      LLM_MODEL: ${LLM_MODEL:-qwen3:latest}
+      LLM_MODELS: ${LLM_MODELS:-qwen3:latest,gemma4:e2b}
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-60m}
+      # WSL の `speech serve haas-ja-v1.0 qwen3-tts-0.6b silero-vad`
+      SPEECH_HOST: host.docker.internal
+      SPEECH_PORT: ${SPEECH_PORT:-8080}
+      ASR_MODEL: Haas-ja-v1.0
+      TTS_MODEL: Qwen3-TTS-12Hz-0.6B-CustomVoice
+      TTS_VOICE: ${TTS_VOICE:-ono_anna}
+      # 無音がこの長さ続いたら発話の終わりとみなす
+      VAD_SILENCE_MS: ${VAD_SILENCE_MS:-600}
+      # 保持する発言数（ユーザーとAIの合計）。40 で 20 往復分
+      MAX_HISTORY: ${MAX_HISTORY:-40}
+      SYSTEM_PROMPT: |
+        あなたは気さくな雑談相手です。ユーザーとは音声で会話しています。
+        これまでの会話の流れを踏まえて返答してください。
+        ユーザーが前に話した内容（話題、出来事、好み、名前や数など）を覚えておき、関係するときは自然に触れてください。
+        ユーザーの発言が短かったり主語が省略されていたりしたら、直前の話題の続きとして解釈してください。
+        話題を勝手に変えず、ユーザーが新しい話題を出すまでは今の話題を掘り下げてください。
+        ユーザーの発言は音声認識の結果なので、聞き間違いや途中で区切れた文が含まれることがあります。文脈から意図を汲み取ってください。
+        返答は話し言葉で、1〜3文程度の短さにしてください。
+        箇条書き、記号、絵文字、マークダウンは使わないでください。
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # restart: unless-stopped
